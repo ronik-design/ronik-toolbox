@@ -9,14 +9,14 @@
  * that starts the plugin.
  *
  * @link              https://www.ronikdesign.com/
- * @since             .1
+ * @since             .2
  * @package           Ronikdesign
  *
  * @wordpress-plugin
- * Plugin Name:       Ronik Designs Developer Toolbox
+ * Plugin Name:       Ronik Designs Developer Toolbox Enhanced
  * Plugin URI:        https://github.com/ronik-design/ronikdesign
  * Description:       Theme Code Optimizer. ACF is necessary for plugin to work correctly.
- * Version:           .1
+ * Version:           .2
  * Author:            Kevin Mancuso
  * Author URI:        https://www.ronikdesign.com/
  * License:           GPL-2.0+
@@ -35,15 +35,9 @@ if ( ! defined( 'WPINC' ) ) {
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
-define( 'RONIKDESIGN_VERSION', '.1' );
+define( 'RONIKDESIGN_VERSION', '.2' );
 
 
-
-// $myUpdateChecker = PucFactory::buildUpdateChecker(
-// 	'https://kmancuso.com/plugin.json',
-// 	__FILE__, //Full path to the main plugin file or functions.php.
-// 	'ronikdesign'
-// );
 
 require 'plugin-update-checker/plugin-update-checker.php';
 use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
