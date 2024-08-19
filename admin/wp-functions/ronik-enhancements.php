@@ -143,6 +143,12 @@ function ronikdesigns_wpb_login_logo()
 
 ?>
     <style type="text/css">
+       #login .video video, .login .video video{            
+            object-fit: cover;
+            object-position: center center;
+            width: 100%;
+            height: 100%;         
+        }
          #login .video, .login .video{
             position: absolute;
             width: 100vw;
@@ -192,8 +198,34 @@ function ronikdesigns_wpb_login_logo()
             opacity: .5;
         }
     </style>
-    <div class="video">
-        <iframe id="background-video" src="https://player.vimeo.com/video/391604277?background=1"></iframe>
-    </div>
+    <?php 
+    $f_wp_login_styling_logo = get_field('wp_login_styling_logo', 'options');           
+    if( $f_wp_login_styling_logo ){ ?>
+        <style type="text/css">
+            #login h1 a,
+            .login h1 a {
+                background-image: url(<?= $f_wp_login_styling_logo['url']; ?>);
+                background-size: contain;
+                pointer-events: none;
+            }
+        </style>
+    <?php } ?>
+
+    <?php 
+        $f_wp_login_styling_bg = get_field('wp_login_styling_bg', 'options');        
+        if( $f_wp_login_styling_bg['url'] ){ ?>
+            <div class="video">
+                <video  autoplay muted >
+                    <source src="<?= $f_wp_login_styling_bg['url']; ?>" type="video/mp4">
+                    <iframe id="background-video" src="https://player.vimeo.com/video/391604277?background=1"></iframe>
+                </video>
+            </div>
+        <?php } else{ ?>
+            <div class="video">
+                <iframe id="background-video" src="https://player.vimeo.com/video/391604277?background=1"></iframe>
+            </div>
+        <?php }
+
+    ?>
 <?php }
 add_action('login_enqueue_scripts', 'ronikdesigns_wpb_login_logo');
