@@ -100,7 +100,18 @@ class Ronikdesign_Admin
 		 */
 		// For older sites we would want to enque new jquery but for newer sites we valid the disabled
 		if ( ! wp_script_is( 'jquery', 'enqueued' )) {
-			wp_enqueue_script($this->plugin_name.'jquery', 'https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js', array(), null, true);
+			// wp_enqueue_script($this->plugin_name.'jquery', 'https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js', array(), null, true);
+
+			if (!wp_script_is('jquery', 'enqueued')) {
+				wp_enqueue_script(
+					$this->plugin_name . '-jquery',
+					'https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js',
+					array(),
+					null,
+					true
+				);
+			}
+
 			$scriptName = $this->plugin_name.'jquery';
 			wp_enqueue_script($this->plugin_name, plugin_dir_url(__FILE__) . 'js/ronikdesign-admin.js', array($scriptName), $this->version, false);
 		} else {

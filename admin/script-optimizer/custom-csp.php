@@ -27,7 +27,32 @@ if ($f_csp_enable) {
     }
     // Disallow scripts Defer.
     $f_csp_disallow_scripts_defer = get_field('csp_disallow-script-defer', 'option');
-    define('DISALLOW_SCRIPTS_DEFER', $f_csp_disallow_scripts_defer);
+    
+    // Default scripts that should not be deferred
+    $default_disallow_scripts = array(
+        array('handle' => 'wp-i18n'),
+        array('handle' => 'wp-element'),
+        array('handle' => 'wp-blocks'),
+        array('handle' => 'wp-components'),
+        array('handle' => 'wp-polyfill'),
+        array('handle' => 'wp-hooks'),
+        array('handle' => 'wp-data'),
+        array('handle' => 'wp-api-fetch'),
+        array('handle' => 'wp-dom-ready'),
+        array('handle' => 'wp-edit-post'),
+        array('handle' => 'wp-plugins'),
+        array('handle' => 'wp-edit-blocks'),
+        array('handle' => 'wp-block-editor')
+    );
+    
+    // Merge default scripts with user-defined scripts
+    if ($f_csp_disallow_scripts_defer && is_array($f_csp_disallow_scripts_defer)) {
+        $disallow_scripts_defer = array_merge($default_disallow_scripts, $f_csp_disallow_scripts_defer);
+    } else {
+        $disallow_scripts_defer = $default_disallow_scripts;
+    }
+    
+    define('DISALLOW_SCRIPTS_DEFER', $disallow_scripts_defer);
     define('ALLOWABLE_FONTS', $csp_allow_fonts);
     define('ALLOWABLE_SCRIPTS', $csp_allow_scripts);
     /**
@@ -54,10 +79,11 @@ if ($f_csp_enable) {
     }
     add_filter('body_class', 'ronikdesigns_body_class');
 
-    function hook_csp() {
-        ?>
+    function hook_csp()
+    {
+?>
         <span data-csp="<?php echo CSP_NONCE; ?>" style="opacity:0;position:absolute;left:-3000px;top:-3000px;height:0;overflow:hidden;"></span>
-        <?php
+<?php
     }
     add_action('wp_head', 'hook_csp');
 
@@ -147,9 +173,9 @@ if ($f_csp_enable) {
             }
 
             // Basically
-            if(DISALLOW_SCRIPTS_DEFER){
-                foreach(DISALLOW_SCRIPTS_DEFER as $key => $reject_script_defer){
-                    if($reject_script_defer['handle'] == $handle){
+            if (DISALLOW_SCRIPTS_DEFER) {
+                foreach (DISALLOW_SCRIPTS_DEFER as $key => $reject_script_defer) {
+                    if ($reject_script_defer['handle'] == $handle) {
                         $html = trim(str_replace("defer", "", $html));
                     }
                 }
@@ -167,6 +193,9 @@ if ($f_csp_enable) {
             $headers['X-Content-Type-Options']      = 'nosniff';
             $headers['X-XSS-Protection']            = '1; mode=block';
             $headers['Permissions-Policy']          = 'browsing-topics=(), fullscreen=(self "' . ENV_PATH . '"), geolocation=*, camera=()';
+            // Cross-Origin headers (COOP + COEP)
+            $headers['Cross-Origin-Opener-Policy']  = 'same-origin';
+            $headers['Cross-Origin-Embedder-Policy'] = 'require-corp';
             //Note: In the presence of a CSP nonce the unsafe-inline directive will be ignored by modern browsers. Older browsers, which don't support nonces, will see unsafe-inline and allow inline scripts to execute. For site to work properly.
             $headers['Content-Security-Policy']     = " script-src '" . $nonce . "' 'strict-dynamic' 'unsafe-inline' 'unsafe-eval' https: 'self'; ";
             // $headers['Content-Security-Policy']      = " script-src 'strict-dynamic' 'unsafe-inline' 'unsafe-eval' https: 'self'; ";
@@ -187,6 +216,10 @@ if ($f_csp_enable) {
             $headers['Content-Security-Policy']     .= " report-uri " . ENV_PATH . "; ";
 
             $headers['X-Frame-Options']             = 'SAMEORIGIN';
+
+
+
+
             return $headers;
         }
         add_filter('wp_headers', 'additional_securityheaders', 1);

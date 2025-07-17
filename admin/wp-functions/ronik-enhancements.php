@@ -213,7 +213,7 @@ function ronikdesigns_wpb_login_logo()
 
     <?php 
         $f_wp_login_styling_bg = get_field('wp_login_styling_bg', 'options');        
-        if( $f_wp_login_styling_bg['url'] ){ ?>
+        if( isset($f_wp_login_styling_bg['url']) && $f_wp_login_styling_bg['url'] ){ ?>
             <div class="video">
                 <video  autoplay muted >
                     <source src="<?= $f_wp_login_styling_bg['url']; ?>" type="video/mp4">

@@ -5,7 +5,7 @@ function ronikdesigns_acf_toolbars($toolbars)
 {
     // Add Minimal toolbar
     $toolbars['Minimal'] = array();
-    $toolbars['Minimal'][1] = array('bold', 'italic', 'link');
+    $toolbars['Minimal'][1] = array( 'styleselect','bold', 'italic');
 
     return $toolbars;
 }
