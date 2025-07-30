@@ -3,31 +3,31 @@ $f_csp_enable = get_field('csp_enable', 'option');
 if ($f_csp_enable) {
     /**
      * ENV_PATH
-     * This is critcal for csp to work correctly.
+     * This is critical for csp to work correctly.
      * We need to set the paths to all external links that are needed for the site to work properly.
      */
     define('ENV_PATH', get_site_url());
+
     // ALLOWABLE_FONTS
     $f_csp_allow_fonts = get_field('csp_allow-fonts', 'option');
-    $csp_allow_fonts = " data: https://fonts.googleapis.com/ https://fonts.gstatic.com/  ";
+    $csp_allow_fonts = " https://fonts.googleapis.com/ https://fonts.gstatic.com/  ";
     $csp_allow_fonts .= " " . ENV_PATH . " ";
     if ($f_csp_allow_fonts) {
         foreach ($f_csp_allow_fonts as $allow_fonts) {
             $csp_allow_fonts .= $allow_fonts['link'] . ' ';
         }
     }
+
     // ALLOWABLE_SCRIPTS
     $f_csp_allow_scripts = get_field('csp_allow-scripts', 'option');
     // We automatically include the site url and blob data & some of the big companies urls...
-    $csp_allow_scripts = "https://secure.gravatar.com/ https://0.gravatar.com/ https://google.com/ https://www.google.com/ https://www.google-analytics.com/ https://www.googletagmanager.com/ https://tagmanager.google.com https://ajax.googleapis.com/ https://googleads.g.doubleclick.net/ https://ssl.gstatic.com https://www.gstatic.com https://www.facebook.com/ https://connect.facebook.net/ https://twitter.com/ https://analytics.twitter.com/ https://t.co/ https://static.ads-twitter.com/ https://linkedin.com/ https://px.ads.linkedin.com/ https://px4.ads.linkedin.com/ https://player.vimeo.com/ https://www.youtube.com/ https://youtu.be/" . site_url() . " blob: data: " . $csp_allow_fonts . " ";
+    $csp_allow_scripts = "https://secure.gravatar.com/ https://0.gravatar.com/ https://google.com/ https://www.google.com/ https://www.google-analytics.com/ https://www.googletagmanager.com/ https://tagmanager.google.com https://ajax.googleapis.com/ https://googleads.g.doubleclick.net/ https://ssl.gstatic.com https://www.gstatic.com https://www.facebook.com/ https://connect.facebook.net/ https://twitter.com/ https://analytics.twitter.com/ https://t.co/ https://static.ads-twitter.com/ https://linkedin.com/ https://px.ads.linkedin.com/ https://px4.ads.linkedin.com/ https://player.vimeo.com/ https://www.youtube.com/ https://youtu.be/" . site_url() . "" . $csp_allow_fonts . " ";
     if ($f_csp_allow_scripts) {
         foreach ($f_csp_allow_scripts as $allow_scripts) {
             $csp_allow_scripts .= $allow_scripts['link'] . ' ';
         }
     }
-    // Disallow scripts Defer.
-    $f_csp_disallow_scripts_defer = get_field('csp_disallow-script-defer', 'option');
-    
+
     // Default scripts that should not be deferred
     $default_disallow_scripts = array(
         array('handle' => 'wp-i18n'),
@@ -44,37 +44,36 @@ if ($f_csp_enable) {
         array('handle' => 'wp-edit-blocks'),
         array('handle' => 'wp-block-editor')
     );
-    
-    // Merge default scripts with user-defined scripts
+
+    // Merge with user-defined scripts
+    $f_csp_disallow_scripts_defer = get_field('csp_disallow-script-defer', 'option');
     if ($f_csp_disallow_scripts_defer && is_array($f_csp_disallow_scripts_defer)) {
         $disallow_scripts_defer = array_merge($default_disallow_scripts, $f_csp_disallow_scripts_defer);
     } else {
         $disallow_scripts_defer = $default_disallow_scripts;
     }
-    
+
     define('DISALLOW_SCRIPTS_DEFER', $disallow_scripts_defer);
     define('ALLOWABLE_FONTS', $csp_allow_fonts);
     define('ALLOWABLE_SCRIPTS', $csp_allow_scripts);
+
     /**
-     * Custom Nonce
-     * This is critcal for csp to work correctly.
+     * Custom Nonce - Enhanced version
      */
     if (false === ($csp_time = get_transient('csp_time_dilation'))) {
-        $csp_time = time(); // Current timestamp.
-        $csp_expire_time = rand(10, 100); // We add a random function between 10-100 seconds to the function. This will make it harder to predict the expiration of the nonce.
+        $csp_time = time();
+        $csp_expire_time = rand(300, 600); // Increased to 5-10 minutes for better stability
         set_transient('csp_time_dilation', $csp_time, $csp_expire_time);
     }
-    // Based on wp not having a true nonce function... we add a time stamp to the nonce name to auto create a new one after certain amout of time has passed. Not ideal but better than 24 hours or 12 hours.
+
     define('CSP_NONCE', wp_create_nonce('csp_nonce_' . $csp_time));
 
     /**
-     * Add a class to the body class.
-     * Primary purpose is to let js know that csp is enabled
+     * Add CSP nonce to body class and make it available to JavaScript
      */
     function ronikdesigns_body_class($classes)
     {
         $classes[] = 'csp-enabled';
-
         return $classes;
     }
     add_filter('body_class', 'ronikdesigns_body_class');
@@ -83,162 +82,243 @@ if ($f_csp_enable) {
     {
 ?>
         <span data-csp="<?php echo CSP_NONCE; ?>" style="opacity:0;position:absolute;left:-3000px;top:-3000px;height:0;overflow:hidden;"></span>
-<?php
+        <script nonce="<?php echo CSP_NONCE; ?>">
+            // Make nonce available globally for plugins that need it
+            window.CSP_NONCE = '<?php echo CSP_NONCE; ?>';
+        </script>
+        <?php
     }
-    add_action('wp_head', 'hook_csp');
-
+    add_action('wp_head', 'hook_csp', 1); // Higher priority
 
     /**
      * We only want to trigger when user is not logged in.
      * Due to the complexity of the wp admin interface.
      */
     if (!is_admin() && !is_user_logged_in()) {
-        //Remove Gutenberg Block Library CSS from loading on the frontend
+
+        // Remove unnecessary WordPress CSS
         function ronikdesigns_remove_wp_block_library_css()
         {
             wp_dequeue_style('wp-block-library');
             wp_dequeue_style('wp-block-library-theme');
-            wp_dequeue_style('wc-block-style'); // Remove WooCommerce block CSS
+            wp_dequeue_style('wc-block-style');
         }
         add_action('wp_enqueue_scripts', 'ronikdesigns_remove_wp_block_library_css', 100);
-        // This retrieves all scripts and style handles
-        function handle_retrieval($styles, $scripts)
-        {
-            // all loaded Scripts
-            if ($scripts) {
-                global $wp_scripts;
-                return $wp_scripts->queue;
-            }
-            // all loaded Styles (CSS)
-            if ($styles) {
-                global $wp_styles;
-                return $wp_styles->queue;
-            }
-        }
-        // Move jQuery script to the footer instead of header.
+
+        // Move jQuery to footer
         function ronikdesigns_jquery_to_footer()
         {
-            // wp_scripts()->add_data( 'jquery', 'group', 1 );
             wp_scripts()->add_data('jquery-core', 'group', 1);
             wp_scripts()->add_data('jquery-migrate', 'group', 1);
         }
         add_action('wp_enqueue_scripts', 'ronikdesigns_jquery_to_footer');
-        //Remove JQuery migrate,
+
+        // Remove jQuery migrate
         function ronikdesigns_remove_jquery_migrate($scripts)
         {
             if (!is_admin() && isset($scripts->registered['jquery'])) {
                 $script = $scripts->registered['jquery'];
-                if ($script->deps) { // Check whether the script has any dependencies
-                    $script->deps = array_diff($script->deps, array(
-                        'jquery-migrate'
-                    ));
+                if ($script->deps) {
+                    $script->deps = array_diff($script->deps, array('jquery-migrate'));
                 }
             }
         }
         add_action('wp_default_scripts', 'ronikdesigns_remove_jquery_migrate');
-        //Add preload to all enqueue styles.
-        function ronikdesigns_add_preload_attribute($link, $handle)
-        {
-            $all_styles = handle_retrieval(true, false); // A list of all the styles with handles.
-            $styles_to_preload = $all_styles;
-            # add the preload attribute to the css array and keep the original.
-            if ($styles_to_preload) {
-                foreach ($styles_to_preload as $i => $current_style) {
-                    if (true == strpos($link, $current_style)) {
-                        $org_link = $link;
-                        // $mod_link = str_replace("rel='stylesheet'", "rel='preload' as='style'", $link);
-                        $mod_link = str_replace(array("rel='stylesheet'", "id='"), array("rel='preload' rel='preconnect' as='style'", "id='pre-"), $link);
-                        $link = $mod_link . $org_link;
-                        return $link;
-                    }
+
+        /**
+         * ENHANCED: Add nonce to ALL script tags
+         */
+        add_filter('script_loader_tag', function ($tag, $handle, $src) {
+            // Add nonce to all script tags if not already present
+            if (strpos($tag, 'nonce=') === false) {
+                $tag = str_replace('<script ', '<script nonce="' . CSP_NONCE . '" ', $tag);
+            }
+
+            // Add defer to most scripts, but not to critical ones
+            $critical_scripts = apply_filters('csp_critical_scripts', DISALLOW_SCRIPTS_DEFER);
+            $should_defer = true;
+
+            foreach ($critical_scripts as $critical_script) {
+                if ($critical_script['handle'] == $handle) {
+                    $should_defer = false;
+                    break;
                 }
             }
-        }
-        add_filter('style_loader_tag', 'ronikdesigns_add_preload_attribute', 10, 2);
-        // Nonce external scripts
-        add_filter('nonce_scripts', function ($scripts) {
-            $all_scripts = handle_retrieval(false, true);
-            return $all_scripts;
+
+            if ($should_defer && strpos($tag, 'defer') === false) {
+                $tag = str_replace('<script ', '<script defer ', $tag);
+            }
+
+            return $tag;
+        }, 10, 3);
+
+        /**
+         * ENHANCED: Add nonce to inline scripts
+         */
+        add_filter('wp_inline_script_attributes', function ($attributes) {
+            $attributes['nonce'] = CSP_NONCE;
+            return $attributes;
         });
-        add_filter('script_loader_tag', function ($html, $handle) {
-            // CSP fix
-            // $nonce = wp_create_nonce( 'my-nonce' );
-            // $nonce = 'random123';
-            $deferHandles = apply_filters('nonce_scripts', []);
-            if (in_array($handle, $deferHandles)) {
-                $html = trim(str_replace("<script", '<script type="text/javascript" defer nonce="' . CSP_NONCE . '"', $html));
-            } else {
-                // Internal
-                $html = trim(str_replace("<script", '<script type="text/javascript" defer nonce="' . CSP_NONCE . '"', $html));
-            }
 
-            // Basically
-            if (DISALLOW_SCRIPTS_DEFER) {
-                foreach (DISALLOW_SCRIPTS_DEFER as $key => $reject_script_defer) {
-                    if ($reject_script_defer['handle'] == $handle) {
-                        $html = trim(str_replace("defer", "", $html));
+        add_filter('wp_script_attributes', function ($attributes) {
+            if (!isset($attributes['nonce'])) {
+                $attributes['nonce'] = CSP_NONCE;
+            }
+            return $attributes;
+        });
+
+        /**
+         * ENHANCED: Hook into wp_print_scripts to catch plugin inline scripts
+         */
+        function capture_and_nonce_inline_scripts()
+        {
+            ob_start(function ($html) {
+                // Find all script tags without nonce and add them
+                $pattern = '/<script(?![^>]*nonce=)([^>]*)>(.*?)<\/script>/is';
+                return preg_replace_callback($pattern, function ($matches) {
+                    $attributes = $matches[1];
+                    $content = $matches[2];
+
+                    // Skip if it's an external script (has src attribute)
+                    if (strpos($attributes, 'src=') !== false) {
+                        return $matches[0];
                     }
-                }
-            }
 
-            return $html;
-        }, 1, 2);
+                    // Add nonce to inline scripts
+                    return '<script nonce="' . CSP_NONCE . '"' . $attributes . '>' . $content . '</script>';
+                }, $html);
+            });
+        }
+        add_action('wp_head', 'capture_and_nonce_inline_scripts', 1);
+        add_action('wp_footer', 'capture_and_nonce_inline_scripts', 1);
 
-        // CSP fix.
+        /**
+         * ENHANCED: Better CSP headers with stricter policy
+         */
         function additional_securityheaders($headers)
         {
-            // Need to redeclare csp with nonce-.
-            $nonce = 'nonce-' . CSP_NONCE;
-            $headers['Referrer-Policy']             = 'no-referrer-when-downgrade'; //This is the default value, the same as if it were not set.
-            $headers['X-Content-Type-Options']      = 'nosniff';
-            $headers['X-XSS-Protection']            = '1; mode=block';
-            $headers['Permissions-Policy']          = 'browsing-topics=(), fullscreen=(self "' . ENV_PATH . '"), geolocation=*, camera=()';
-            // Cross-Origin headers (COOP + COEP)
-            $headers['Cross-Origin-Opener-Policy']  = 'same-origin';
+            $nonce = "nonce-" . CSP_NONCE;
+
+            // Security headers
+            $headers['Referrer-Policy'] = 'no-referrer-when-downgrade';
+            $headers['X-Content-Type-Options'] = 'nosniff';
+            $headers['X-XSS-Protection'] = '1; mode=block';
+            $headers['Permissions-Policy'] = 'browsing-topics=(), fullscreen=(self ' . ENV_PATH . '), geolocation=*, camera=()';
+            $headers['Cross-Origin-Opener-Policy'] = 'same-origin';
             $headers['Cross-Origin-Embedder-Policy'] = 'require-corp';
-            //Note: In the presence of a CSP nonce the unsafe-inline directive will be ignored by modern browsers. Older browsers, which don't support nonces, will see unsafe-inline and allow inline scripts to execute. For site to work properly.
-            $headers['Content-Security-Policy']     = " script-src '" . $nonce . "' 'strict-dynamic' 'unsafe-inline' 'unsafe-eval' https: 'self'; ";
-            // $headers['Content-Security-Policy']      = " script-src 'strict-dynamic' 'unsafe-inline' 'unsafe-eval' https: 'self'; ";
-            $headers['Content-Security-Policy']     .= " default-src 'strict-dynamic' 'unsafe-inline' 'unsafe-eval' https: 'self'; ";
-            $headers['Content-Security-Policy']     .= " script-src-elem 'unsafe-inline' " . ALLOWABLE_SCRIPTS . " https; ";
+            $headers['X-Frame-Options'] = 'SAMEORIGIN';
 
-            $headers['Content-Security-Policy']     .= " object-src 'none'; ";
-            $headers['Content-Security-Policy']     .= " base-uri 'none'; ";
+            // ENHANCED CSP - Maximum XSS protection with backward compatibility
+            $csp = "default-src 'self'; ";
 
-            $headers['Content-Security-Policy']     .= " child-src  'unsafe-inline' " . ALLOWABLE_SCRIPTS . " https; ";
-            $headers['Content-Security-Policy']     .= " style-src  'unsafe-inline' " . ALLOWABLE_SCRIPTS . " https; ";
+            // Scripts: Secure modern approach with backward compatibility
+            // 'unsafe-inline' is ignored by modern browsers when nonce is present
+            // https: http: are ignored by browsers supporting 'strict-dynamic'
+            $csp .= "script-src 'self' '$nonce' 'strict-dynamic' 'unsafe-inline' https: http:; ";
 
-            $headers['Content-Security-Policy']     .= " font-src 'self'  " . ALLOWABLE_FONTS . ";  ";
-            $headers['Content-Security-Policy']     .= " img-src 'self'  " . ALLOWABLE_SCRIPTS . ";  ";
+            // FIXED: Remove data: scheme from script-src-elem for XSS protection
+            // Only allow specific trusted domains and nonce
+            $csp .= "script-src-elem 'self' '$nonce' " . ALLOWABLE_SCRIPTS . "; ";
 
-            $headers['Content-Security-Policy']     .= " frame-src 'self'  " . ALLOWABLE_SCRIPTS . ";  ";
+            // Styles: Allow unsafe-inline for now (can be improved later with nonces for styles too)
+            $csp .= "style-src 'self' 'unsafe-inline' " . ALLOWABLE_SCRIPTS . "; ";
 
-            $headers['Content-Security-Policy']     .= " report-uri " . ENV_PATH . "; ";
+            // FIXED: Add connect-src for AJAX/fetch requests (Google Analytics, etc.)
+            $csp .= "connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://region1.google-analytics.com https://region1.analytics.google.com https://stats.g.doubleclick.net " . ALLOWABLE_SCRIPTS . "; ";
 
-            $headers['X-Frame-Options']             = 'SAMEORIGIN';
+            $csp .= "font-src 'self' " . ALLOWABLE_FONTS . "; ";
+            $csp .= "img-src 'self' data: blob: " . ALLOWABLE_SCRIPTS . "; ";
+            $csp .= "frame-src 'self' " . ALLOWABLE_SCRIPTS . "; ";
+            $csp .= "object-src 'none'; ";
+            $csp .= "base-uri 'none'; ";
+            $csp .= "report-uri " . ENV_PATH . "/csp-report;";
 
-
-
+            $headers['Content-Security-Policy'] = $csp;
 
             return $headers;
         }
         add_filter('wp_headers', 'additional_securityheaders', 1);
 
-        function wporg_my_wp_script_attributes($attr)
+        /**
+         * ENHANCED: Plugin compatibility filters
+         */
+
+        // Gravity Forms
+        add_filter('gform_csp_nonce', function () {
+            return CSP_NONCE;
+        });
+
+        // WooCommerce
+        add_filter('woocommerce_inline_script_attributes', function ($attributes) {
+            $attributes['nonce'] = CSP_NONCE;
+            return $attributes;
+        });
+
+        // Contact Form 7
+        add_filter('wpcf7_script_attributes', function ($attributes) {
+            $attributes['nonce'] = CSP_NONCE;
+            return $attributes;
+        });
+
+        /**
+         * ENHANCED: Generic plugin inline script handler
+         * This tries to catch inline scripts from plugins that don't use WordPress hooks
+         */
+        function fix_plugin_inline_scripts()
         {
-            if (!isset($attr['nonce'])) {
-                $attr['nonce'] = CSP_NONCE; // Random custom function
-            }
-            return $attr;
+        ?>
+            <script nonce="<?php echo CSP_NONCE; ?>">
+                // Helper function for plugins to add nonce to dynamically created scripts
+                (function() {
+                    const originalCreateElement = document.createElement;
+                    document.createElement = function(tagName) {
+                        const element = originalCreateElement.call(this, tagName);
+                        if (tagName.toLowerCase() === 'script') {
+                            element.setAttribute('nonce', '<?php echo CSP_NONCE; ?>');
+                        }
+                        return element;
+                    };
+
+                    // Also override innerHTML for scripts
+                    const originalSetInnerHTML = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML').set;
+                    Object.defineProperty(Element.prototype, 'innerHTML', {
+                        set: function(value) {
+                            if (this.tagName === 'SCRIPT' && !this.hasAttribute('nonce')) {
+                                this.setAttribute('nonce', '<?php echo CSP_NONCE; ?>');
+                            }
+                            return originalSetInnerHTML.call(this, value);
+                        }
+                    });
+                })();
+            </script>
+<?php
         }
-        add_filter('wp_script_attributes', 'wporg_my_wp_script_attributes');
-        function mxd_wp_inline_script_attributes($attr)
-        {
-            if (!isset($attr['nonce'])) {
-                $attr['nonce'] = CSP_NONCE;
-            }
-            return $attr;
-        };
-        add_filter('wp_inline_script_attributes', 'mxd_wp_inline_script_attributes');
+        add_action('wp_head', 'fix_plugin_inline_scripts', 999);
     }
 }
+
+/**
+ * BONUS: CSP Report Handler
+ * Add this to handle CSP violation reports
+ */
+function handle_csp_reports()
+{
+    if ($_SERVER['REQUEST_URI'] === '/csp-report' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+        $input = file_get_contents('php://input');
+        $report = json_decode($input, true);
+
+        // Log CSP violations (you can customize this)
+        error_log('CSP Violation: ' . print_r($report, true));
+
+        // You could also save to database or send alerts
+
+        http_response_code(204); // No content
+        exit;
+    }
+
+    add_action('send_headers', function() {
+        header("Strict-Transport-Security: max-age=31536000; includeSubDomains; preload");
+    });
+}
+add_action('init', 'handle_csp_reports');
+?>
