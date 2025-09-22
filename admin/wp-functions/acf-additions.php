@@ -213,7 +213,7 @@ add_action('acf/render_field_settings/type=gf_select', 'ronikdesigns_acf_multi_m
 function ronikdesigns_acf_multi_min_max_validation($valid, $value, $field, $input)
 {
     if ($valid) {
-        if ($field['multi_min']) {
+        if (isset($field['multi_min']) && $field['multi_min']) {
             if (!$value) $value = array(); // if value is empty, set it to an empty array so count() returns 0
 
             // if value doesn't meet minimum, return validation error message
@@ -226,7 +226,7 @@ function ronikdesigns_acf_multi_min_max_validation($valid, $value, $field, $inpu
                 }
             }
         }
-        if ($field['multi_max']) {
+        if (isset($field['multi_max']) && $field['multi_max']) {
             if (!$value) $value = array(); // if value is empty, set it to an empty array so count() returns 0
 
             // if value exceeds maximum, return validation error message

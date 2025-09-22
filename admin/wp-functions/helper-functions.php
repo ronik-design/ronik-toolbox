@@ -75,9 +75,9 @@ class RonikHelper{
 	}
 	// Write error logs cleanly.
 	public function ronikdesigns_write_log_devmode($log, $severity_level='low') {
-		// if($severity_level == 'low'){
-		// 	return false;
-		// }
+		if($severity_level == 'low'){
+			return false;
+		}
 		$f_error_email = get_field('error_email', 'option');
 		// Lets run a backtrace to get more useful information.
 		$t = debug_backtrace();

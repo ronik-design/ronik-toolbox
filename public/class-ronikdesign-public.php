@@ -167,7 +167,6 @@ class Ronikdesign_Public
 			$response = wp_remote_get($f_url, $args);
 			$helper->ronikdesigns_write_log_devmode('Phone Validation: '.$response, 'low');
 
-			// error_log(print_r($response, true ));
 			if ((!is_wp_error($response)) && (200 === wp_remote_retrieve_response_code($response))) {
 				$responseBody = json_decode($response['body']);
 				if (json_last_error() === JSON_ERROR_NONE) {
@@ -200,7 +199,6 @@ class Ronikdesign_Public
 				if (json_last_error() === JSON_ERROR_NONE) {
 					if ($responseBody->is_valid_format->value == 1) {
 						if($f_strict){
-							// error_log(print_r(CSP_NONCE, true));
 							wp_send_json_success($responseBody->is_valid_format->value);
 						} else {
 							wp_send_json_success($responseBody->is_valid_format->value);
@@ -414,8 +412,6 @@ class Ronikdesign_Public
 	}
 
 	function ronikdesigns_cache_on_post_save() {
-		error_log(print_r( 'Ronik_CLEAR CACHE' , true));
-		error_log(print_r( "nbcu-cached-".date("Y")."", true));
 		$version_ronikdesigns_increment = get_option( 'version_ronikdesigns_increment', 1 );
         update_option( 'version_ronikdesigns_increment', $version_ronikdesigns_increment+1 );
 		wp_cache_flush();

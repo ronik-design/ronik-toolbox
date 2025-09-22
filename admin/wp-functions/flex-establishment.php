@@ -10,11 +10,6 @@ function ronikdesigns_FlexEstablishment($block = false, $flexname, $f_flexname_o
     // Create class attribute allowing for custom "className" and "align" values.
     $class_name = $flexname;
 
-
-    error_log(print_r($class_name, true));
-
-
-
     $f_bg = get_field('advanced_settings_outer-bg', $f_pageID);
     if ($f_bg) {
         $f_bg = 'background-color:' . $f_bg . ';';
