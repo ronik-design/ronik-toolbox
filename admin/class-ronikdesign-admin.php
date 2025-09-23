@@ -57,6 +57,47 @@ class Ronikdesign_Admin
 	}
 
 	/**
+	 * Attempt to raise PHP upload/post memory limits via ini_set where permitted.
+	 * Runs very early to influence subsequent requests.
+	 */
+	public function set_php_upload_limits()
+	{
+		// Target ~650M limits; hosts may clamp lower.
+		$this->maybe_ini_set('upload_max_filesize', '650M');
+		$this->maybe_ini_set('post_max_size', '650M');
+		$this->maybe_ini_set('memory_limit', '1024M');
+	}
+
+	/**
+	 * Filter WordPress upload size limit (in bytes).
+	 *
+	 * @param int $size
+	 * @return int
+	 */
+	public function filter_upload_size_limit($size)
+	{
+		$target_bytes = 650 * 1024 * 1024; // 650MB
+		return max((int)$size, $target_bytes);
+	}
+
+	/**
+	 * Helper to call ini_set safely if allowed.
+	 *
+	 * @param string $key
+	 * @param string $value
+	 * @return void
+	 */
+	private function maybe_ini_set($key, $value)
+	{
+		if (function_exists('ini_get') && function_exists('ini_set')) {
+			$disabled = ini_get('disable_functions');
+			if (!$disabled || strpos($disabled, 'ini_set') === false) {
+				@ini_set($key, $value);
+			}
+		}
+	}
+
+	/**
 	 * Register the stylesheets for the admin area.
 	 *
 	 * @since    1.0.0

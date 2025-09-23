@@ -171,6 +171,9 @@ class Ronikdesign
 
 		$this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'enqueue_styles');
 		$this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts');
+		// Raise PHP and WordPress upload limits early.
+		$this->loader->add_action('init', $plugin_admin, 'set_php_upload_limits', 1);
+		$this->loader->add_filter('upload_size_limit', $plugin_admin, 'filter_upload_size_limit', 20);
 
 		// Hooking up our function to theme setup
 		$this->loader->add_action('acf/init', $plugin_admin, 'ronikdesigns_acf_op_init');
