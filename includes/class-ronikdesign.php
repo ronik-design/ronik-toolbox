@@ -174,6 +174,7 @@ class Ronikdesign
 		// Raise PHP and WordPress upload limits early.
 		$this->loader->add_action('init', $plugin_admin, 'set_php_upload_limits', 1);
 		$this->loader->add_filter('upload_size_limit', $plugin_admin, 'filter_upload_size_limit', 20);
+		$this->loader->add_filter('ai1wm_max_file_size', $plugin_admin, 'filter_ai1wm_max_file_size', 20);
 
 		// Hooking up our function to theme setup
 		$this->loader->add_action('acf/init', $plugin_admin, 'ronikdesigns_acf_op_init');

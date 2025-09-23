@@ -63,8 +63,8 @@ class Ronikdesign_Admin
 	public function set_php_upload_limits()
 	{
 		// Target ~650M limits; hosts may clamp lower.
-		$this->maybe_ini_set('upload_max_filesize', '650M');
-		$this->maybe_ini_set('post_max_size', '650M');
+		$this->maybe_ini_set('upload_max_filesize', '750M');
+		$this->maybe_ini_set('post_max_size', '750M');
 		$this->maybe_ini_set('memory_limit', '1024M');
 	}
 
@@ -78,6 +78,17 @@ class Ronikdesign_Admin
 	{
 		$target_bytes = 650 * 1024 * 1024; // 650MB
 		return max((int)$size, $target_bytes);
+	}
+	/**
+	 * Filter All-in-One WP Migration upload limit.
+	 *
+	 * @param int $max_upload_size
+	 * @return int
+	 */
+	public function filter_ai1wm_max_file_size($max_upload_size)
+	{
+		$target_bytes = 750 * 1024 * 1024; // 750MB
+		return max((int)$max_upload_size, $target_bytes);
 	}
 
 	/**
