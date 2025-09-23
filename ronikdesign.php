@@ -9,14 +9,14 @@
  * that starts the plugin.
  *
  * @link              https://www.ronikdesign.com/
- * @since             .91
+ * @since             1.0
  * @package           Ronikdesign
  *
  * @wordpress-plugin
  * Plugin Name:       Ronik Designs Developer Toolbox Enhanced
  * Plugin URI:        https://github.com/ronik-design/ronikdesign
  * Description:       Theme Code Optimizer. ACF is necessary for plugin to work correctly.
- * Version:           .91
+ * Version:           1.0
  * Author:            Kevin Mancuso
  * Author URI:        https://www.ronikdesign.com/
  * License:           GPL-2.0+
@@ -35,9 +35,15 @@ if ( ! defined( 'WPINC' ) ) {
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
-define( 'RONIKDESIGN_VERSION', '.91' );
+define( 'RONIKDESIGN_VERSION', '1.0' );
 
 
+
+// Ensure All-in-One WP Migration sees a higher cap before it initializes.
+if ( ! defined( 'AI1WM_MAX_FILE_SIZE' ) ) {
+    // 1GB cap to comfortably allow 584–750MB uploads.
+    define( 'AI1WM_MAX_FILE_SIZE', 1024 * 1024 * 1024 );
+}
 
 require 'plugin-update-checker/plugin-update-checker.php';
 use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
