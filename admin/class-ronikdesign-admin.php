@@ -62,10 +62,13 @@ class Ronikdesign_Admin
 	 */
 	public function set_php_upload_limits()
 	{
-		// Target ~650M limits; hosts may clamp lower.
+		// Target ~750M limits; hosts may clamp lower.
 		$this->maybe_ini_set('upload_max_filesize', '750M');
 		$this->maybe_ini_set('post_max_size', '750M');
 		$this->maybe_ini_set('memory_limit', '1024M');
+		
+		// Also try to add wp-config.php directives if possible
+		$this->maybe_add_wp_config_limits();
 	}
 
 	/**
@@ -105,6 +108,46 @@ class Ronikdesign_Admin
 			if (!$disabled || strpos($disabled, 'ini_set') === false) {
 				@ini_set($key, $value);
 			}
+		}
+	}
+
+	/**
+	 * Attempt to add PHP limits to wp-config.php if writable.
+	 *
+	 * @return void
+	 */
+	private function maybe_add_wp_config_limits()
+	{
+		$wp_config_path = ABSPATH . 'wp-config.php';
+		
+		// Check if wp-config.php exists and is writable
+		if (!file_exists($wp_config_path) || !is_writable($wp_config_path)) {
+			return;
+		}
+		
+		$wp_config_content = file_get_contents($wp_config_path);
+		
+		// Check if our limits are already added
+		if (strpos($wp_config_content, 'RONIK_UPLOAD_LIMITS') !== false) {
+			return;
+		}
+		
+		// Add our limits before the "That's all, stop editing!" line
+		$limits_code = "\n// Ronik Upload Limits - Added by Ronik Toolbox\n";
+		$limits_code .= "ini_set('upload_max_filesize', '750M');\n";
+		$limits_code .= "ini_set('post_max_size', '750M');\n";
+		$limits_code .= "ini_set('memory_limit', '1024M');\n";
+		$limits_code .= "// End Ronik Upload Limits\n";
+		
+		// Insert before the "That's all, stop editing!" comment
+		$stop_editing_pos = strpos($wp_config_content, "That's all, stop editing!");
+		if ($stop_editing_pos !== false) {
+			$new_content = substr($wp_config_content, 0, $stop_editing_pos) . 
+						   $limits_code . "\n" . 
+						   substr($wp_config_content, $stop_editing_pos);
+			
+			// Write the modified content
+			@file_put_contents($wp_config_path, $new_content);
 		}
 	}
 
