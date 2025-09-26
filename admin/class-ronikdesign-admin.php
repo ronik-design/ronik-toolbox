@@ -68,7 +68,7 @@ class Ronikdesign_Admin
 		$this->maybe_ini_set('memory_limit', '1024M');
 		
 		// Also try to add wp-config.php directives if possible
-		$this->maybe_add_wp_config_limits();
+		// $this->maybe_add_wp_config_limits();
 	}
 
 	/**
