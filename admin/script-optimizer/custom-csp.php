@@ -21,7 +21,7 @@ if ($f_csp_enable) {
     // ALLOWABLE_SCRIPTS
     $f_csp_allow_scripts = get_field('csp_allow-scripts', 'option');
     // We automatically include the site url and blob data & some of the big companies urls...
-    $csp_allow_scripts = "https://tagassistant.google.com/ https://www.googletagmanager.com/ https://secure.gravatar.com/ https://0.gravatar.com/ https://google.com/ https://www.google.com/ https://www.google-analytics.com/ https://www.googletagmanager.com/ https://tagmanager.google.com https://ajax.googleapis.com/ https://googleads.g.doubleclick.net/ https://ssl.gstatic.com https://www.gstatic.com https://www.facebook.com/ https://connect.facebook.net/ https://twitter.com/ https://analytics.twitter.com/ https://t.co/ https://static.ads-twitter.com/ https://linkedin.com/ https://px.ads.linkedin.com/ https://px4.ads.linkedin.com/ https://player.vimeo.com/ https://www.youtube.com/ https://youtu.be/" . site_url() . "" . $csp_allow_fonts . " ";
+    $csp_allow_scripts = "https://tagassistant.google.com/ https://www.googletagmanager.com/ https://secure.gravatar.com/ https://0.gravatar.com/ https://google.com/ https://www.google.com/ https://www.google-analytics.com/ https://www.googletagmanager.com/ https://tagmanager.google.com https://ajax.googleapis.com/ https://googleads.g.doubleclick.net/ https://ssl.gstatic.com https://www.gstatic.com https://www.facebook.com/ https://connect.facebook.net/ https://twitter.com/ https://analytics.twitter.com/ https://t.co/ https://static.ads-twitter.com/ https://linkedin.com/ https://px.ads.linkedin.com/ https://px4.ads.linkedin.com/ https://player.vimeo.com/ https://www.youtube.com/ https://www.youtube-nocookie.com/ https://youtu.be/ https://i.ytimg.com/" . site_url() . "" . $csp_allow_fonts . " ";
     if ($f_csp_allow_scripts) {
         foreach ($f_csp_allow_scripts as $allow_scripts) {
             $csp_allow_scripts .= $allow_scripts['link'] . ' ';
@@ -203,9 +203,10 @@ if ($f_csp_enable) {
             $headers['Referrer-Policy'] = 'no-referrer-when-downgrade';
             $headers['X-Content-Type-Options'] = 'nosniff';
             $headers['X-XSS-Protection'] = '1; mode=block';
-            $headers['Permissions-Policy'] = 'browsing-topics=(), fullscreen=(self ' . ENV_PATH . '), geolocation=*, camera=()';
+            $headers['Permissions-Policy'] = 'browsing-topics=(), fullscreen=(self ' . ENV_PATH . ' https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com), geolocation=*, camera=()';
             $headers['Cross-Origin-Opener-Policy'] = 'same-origin';
-            $headers['Cross-Origin-Embedder-Policy'] = 'credentialless';
+            // COEP removed - incompatible with third-party embeds like YouTube
+            // $headers['Cross-Origin-Embedder-Policy'] = 'credentialless';
             $headers['X-Frame-Options'] = 'SAMEORIGIN';
 
             // ENHANCED CSP - Maximum XSS protection with backward compatibility
