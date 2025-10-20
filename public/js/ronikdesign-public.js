@@ -442,34 +442,72 @@ function initFontSize($) {
             }
         }
     }).parent().attr('originalFontSize','validated');
+    
+    // Store original font sizes before any modifications
+    $('[originalFontSize]').each(function() {
+        if (!$(this).attr('data-original-font-size')) {
+            var currentFontSize = $(this).css('font-size');
+            if (currentFontSize && currentFontSize !== 'inherit') {
+                var pxValue = parseInt(currentFontSize.replace('px', ''));
+                if (pxValue > 0) {
+                    $(this).attr('data-original-font-size', pxValue);
+                }
+            }
+        }
+    });
 
     function tweakFontSize($, times) {
         // Loop through the unique identifier and swap the px to vw.
         $('[originalFontSize]').each(function() {
-			$(this).css('font-size' , '');
-			// We must throttle the font size.
-			setTimeout(() => {
-				let $retrieveFontSize = parseInt($(this).css('font-size'), 10);
-				$(this).css('font-size' , (pxTOvw($retrieveFontSize) * times) + "vw" );
-			}, 500);
-				
+			// Use stored original font size instead of clearing and retrieving
+			var originalFontSize = $(this).attr('data-original-font-size');
+			
+			if (originalFontSize && originalFontSize > 0) {
+				// We must throttle the font size.
+				setTimeout(() => {
+					var vwValue = (pxTOvw(parseInt(originalFontSize)) * times);
+					
+					// Debug: Log the values
+					console.log('Font Size Debug:', {
+						originalPx: originalFontSize,
+						vwValue: vwValue,
+						times: times,
+						element: $(this)[0]
+					});
+					
+					// Apply font-size with !important using attr() method
+					$(this).attr('style', function(i, style) {
+						var newStyle = style || '';
+						// Remove existing font-size from style attribute
+						newStyle = newStyle.replace(/font-size\s*:\s*[^;!]+[^;]*;?/gi, '');
+						// Ensure proper semicolon separation
+						if (newStyle.trim() && !newStyle.trim().endsWith(';')) {
+							newStyle += ';';
+						}
+						// Add new font-size with !important
+						return newStyle + ' font-size: ' + vwValue + 'vw !important;';
+					});
+				}, 500);
+			} else {
+				console.log('No valid original font size found for element:', $(this)[0]);
+			}
 		});
     }
 
     var width = $(window).width();
     var height = $('.image-text-block__inner').css('min-height');
 
-    if (width < 4000 ) {
+    if (width < 2000 ) {
         // Standard Size.
         tweakFontSize($, 1);
         $('.image-text-block__inner').css('min-height', height * 1+'px' );
     }
     else if(width < 5000 ) {
-        tweakFontSize($, 1.4);
+        tweakFontSize($, 1.8);
         $('.image-text-block__inner').css('min-height', height * 1.5+'px' );
     }
     else if(width < 6000 ) {
-        tweakFontSize($, 1.6);
+        tweakFontSize($, 2);
         $('.image-text-block__inner').css('min-height', height * 1.8+'px' );
     }
     else if(width < 7000 ) {
@@ -499,6 +537,87 @@ function initFontSize($) {
     }
 }
 
+function initMaxWidth($) {
+    // Select all elements with measure classes and give them a unique identifier
+    $('[class*="is-style-measure-"]').each(function() {
+        $(this).attr('originalMaxWidth', 'validated');
+        
+        // Store the original max-width value if not already stored
+        if (!$(this).attr('data-original-max-width')) {
+            var currentMaxWidth = $(this).css('max-width');
+            if (currentMaxWidth && currentMaxWidth !== 'none') {
+                var pxValue = parseInt(currentMaxWidth.replace('px', ''));
+                $(this).attr('data-original-max-width', pxValue);
+            }
+        }
+    });
+
+    function tweakMaxWidth($, times) {
+        // Loop through elements with measure classes and convert px to vw
+        $('[originalMaxWidth]').each(function() {
+            var originalMaxWidth = $(this).attr('data-original-max-width');
+            if (originalMaxWidth) {
+                $(this).css('max-width', '');
+                // We must throttle the max-width conversion
+                setTimeout(() => {
+                    var vwValue = (pxTOvw(parseInt(originalMaxWidth)) * times);
+                    // Apply max-width with !important using attr() method
+                    $(this).attr('style', function(i, style) {
+                        var newStyle = style || '';
+                        // Remove existing max-width from style attribute
+                        newStyle = newStyle.replace(/max-width\s*:\s*[^;!]+[^;]*;?/gi, '');
+                        // Ensure proper semicolon separation
+                        if (newStyle.trim() && !newStyle.trim().endsWith(';')) {
+                            newStyle += ';';
+                        }
+                        // Add new max-width with !important
+                        return newStyle + ' max-width: ' + vwValue + 'vw !important;';
+                    });
+                }, 500);
+            }
+        });
+    }
+
+    var width = $(window).width();
+
+    if (width < 2000) {
+        // Standard Size
+        tweakMaxWidth($, 1);
+    }
+    else if (width < 3000) {
+        tweakMaxWidth($, 1.2);
+    }
+    else if (width < 4000) {
+        tweakMaxWidth($, 1.4);
+    }
+    else if (width < 5000) {
+        tweakMaxWidth($, 1.6);
+    }
+    else if (width < 6000) {
+        tweakMaxWidth($, 1.8);
+    }
+    else if (width < 7000) {
+        tweakMaxWidth($, 2.0);
+    }
+    else if (width < 8000) {
+        tweakMaxWidth($, 2.2);
+    }
+    else if (width < 9000) {
+        tweakMaxWidth($, 2.5);
+    } else {
+        tweakMaxWidth($, 3.0);
+    }
+
+    function pxTOvw(value) {
+        var w = window,
+          d = document,
+          e = d.documentElement,
+          g = d.getElementsByTagName('body')[0],
+          x = w.innerWidth || e.clientWidth || g.clientWidth;          
+        return (100*value)/x;
+    }
+}
+
 
 (function( $ ) {
 	'use strict';
@@ -506,6 +625,7 @@ function initFontSize($) {
 	$(window).on('load', function(){
 		spaceReducerMobile($);
 		initFontSize($);
+		initMaxWidth($);
 		// SetTimeOut just incase things havent initialized just yet.
 		setTimeout(() => {
 			addNonce($);
@@ -519,6 +639,7 @@ function initFontSize($) {
 			clearTimeout(throttleResponse);
 			throttleResponse = setTimeout(() => {
 				initFontSize($);
+				initMaxWidth($);
 				spaceReducerMobile($);
 				console.log('addEventListener - resize');
 			}, 100);

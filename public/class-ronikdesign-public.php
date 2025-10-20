@@ -99,6 +99,8 @@ class Ronikdesign_Public
 		 */		
 		// For older sites we would want to enque new jquery but for newer sites we valid the disabled
 		$f_disable = 'invalid';
+		$scriptName = ''; // Initialize variable
+		
 		if ( $f_disable == 'invalid' ) {
 			if (!wp_script_is('jquery', 'enqueued')) {
 				wp_enqueue_script(
@@ -108,9 +110,11 @@ class Ronikdesign_Public
 					null,
 					true
 				);
+				$scriptName = $this->plugin_name . '-jquery';
+			} else {
+				$scriptName = 'jquery'; // Use WordPress jQuery
 			}
 			// wp_enqueue_script($this->plugin_name.'jquery', 'https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js', array(), null, true);
-			$scriptName = $this->plugin_name.'jquery';
 			// wp_enqueue_script($this->plugin_name.'-vimeo', 'https://player.vimeo.com/api/player.js', array($scriptName), $this->version, false);
 			wp_enqueue_script($this->plugin_name, plugin_dir_url(__FILE__) . 'js/ronikdesign-public.js', array($scriptName), $this->version, false);
 			wp_enqueue_script($this->plugin_name . '2', plugin_dir_url(__FILE__) . 'assets/dist/app.min.js', array($scriptName), $this->version, false);
