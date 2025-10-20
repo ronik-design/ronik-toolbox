@@ -434,7 +434,7 @@ function spaceReducerMobile($){
 
 function initFontSize($) {
     // Lets select all font elements. And then give the parents and unique identifier.
-    $("p, a, h1, h2, h3, h4, h5, span, ol, ul, li, button").contents().filter(function(){
+    $("p, a, h1, h2, h3, h4, h5, span, ol, ul, li, button, label , div , strong").contents().filter(function(){
         if( this.nodeType !== 1 ){
             // Double clean up...
             if(this.textContent.search( '\n' )){
