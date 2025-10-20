@@ -540,6 +540,11 @@ function initFontSize($) {
 function initMaxWidth($) {
     // Select all elements with measure classes and give them a unique identifier
     $('[class*="is-style-measure-"]').each(function() {
+        // Skip elements with alignfull class
+        if ($(this).hasClass('alignfull')) {
+            return true; // continue to next iteration
+        }
+        
         $(this).attr('originalMaxWidth', 'validated');
         
         // Store the original max-width value if not already stored
