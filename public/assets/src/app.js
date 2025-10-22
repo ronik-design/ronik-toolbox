@@ -279,6 +279,11 @@
 
 		// Specify image dimensions
 		$('button, a').each(function() {
+			// Skip if aria-label is already populated
+			if($(this).attr('aria-label')){
+				return;
+			}
+			
 			if($(this).children()){
 				if($(this).text()){
 					if($(this).prop("tagName") == 'A'){
