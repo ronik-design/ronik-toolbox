@@ -539,7 +539,7 @@ function initFontSize($) {
 
 function initMaxWidth($) {
     // Select all elements with measure classes and give them a unique identifier
-    $('[class*="is-style-measure-"]').each(function() {
+    $('[class*="is-style-measure-"], [class*="is-layout-constrained"]').each(function() {
         // Skip elements with alignfull class
         if ($(this).hasClass('alignfull')) {
             return true; // continue to next iteration
@@ -549,9 +549,26 @@ function initMaxWidth($) {
         
         // Store the original max-width value if not already stored
         if (!$(this).attr('data-original-max-width')) {
+            // Get max-width from computed styles (includes CSS rules)
             var currentMaxWidth = $(this).css('max-width');
-            if (currentMaxWidth && currentMaxWidth !== 'none') {
-                var pxValue = parseInt(currentMaxWidth.replace('px', ''));
+            
+            // If this is a constrained layout but has no max-width, use width as baseline
+            if ((!currentMaxWidth || currentMaxWidth === 'none') && 
+                ($(this).hasClass('is-layout-constrained') || $(this).attr('class') && $(this).attr('class').indexOf('is-layout-constrained') !== -1)) {
+                // For constrained layouts without explicit max-width, use current width
+                var computedWidth = $(this).width();
+                if (computedWidth && computedWidth > 0) {
+                    currentMaxWidth = computedWidth + 'px';
+                }
+            }
+            
+            // Skip if still no valid max-width
+            if (!currentMaxWidth || currentMaxWidth === 'none') {
+                return true;
+            }
+            
+            var pxValue = parseInt(currentMaxWidth.replace('px', ''));
+            if (pxValue > 0) {
                 $(this).attr('data-original-max-width', pxValue);
             }
         }
