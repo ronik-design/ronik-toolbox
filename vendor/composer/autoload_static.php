@@ -22,6 +22,7 @@ class ComposerStaticInit0863ee264454afd32d38d28920351a83
 
     public static $classMap = array (
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
+        'RonikHelper' => __DIR__ . '/../..' . '/admin/wp-functions/helper-functions.php',
     );
 
     public static function getInitializer(ClassLoader $loader)

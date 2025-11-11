@@ -7,4 +7,5 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'Composer\\InstalledVersions' => $vendorDir . '/composer/InstalledVersions.php',
+    'RonikHelper' => $baseDir . '/admin/wp-functions/helper-functions.php',
 );

@@ -433,6 +433,9 @@ function spaceReducerMobile($){
 
 
 function initFontSize($) {
+	if(!$('body').hasClass('disable-font-size')){
+		return;
+	}
     // Lets select all font elements. And then give the parents and unique identifier.
     $("p, a, h1, h2, h3, h4, h5, span, ol, ul, li, button, label , div , strong").contents().filter(function(){
         if( this.nodeType !== 1 ){
@@ -468,12 +471,12 @@ function initFontSize($) {
 					var vwValue = (pxTOvw(parseInt(originalFontSize)) * times);
 					
 					// Debug: Log the values
-					console.log('Font Size Debug:', {
-						originalPx: originalFontSize,
-						vwValue: vwValue,
-						times: times,
-						element: $(this)[0]
-					});
+					// console.log('Font Size Debug:', {
+					// 	originalPx: originalFontSize,
+					// 	vwValue: vwValue,
+					// 	times: times,
+					// 	element: $(this)[0]
+					// });
 					
 					// Apply font-size with !important using attr() method
 					$(this).attr('style', function(i, style) {
