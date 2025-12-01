@@ -212,7 +212,7 @@ function cleanInputPOST() {
 function ronik_ajax_security($nonce_name ,$skip_nonce ){
 	// Check if user is logged in. AKA user is authorized.
 	if (!is_user_logged_in()) {
-		error_log(print_r( 'Failed user is not logged in', true));
+		// error_log(print_r( 'Failed user is not logged in', true));
 		wp_send_json_success('noreload');
 		return;
 	}
